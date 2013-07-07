@@ -937,6 +937,20 @@ func (client *Client) Zmadd(key string, values map[string]float64 ) (bool, error
 }
 
 
+func (client *Client) Zmadd(key string, values map[string]float64 ) (bool, error) {
+      args := []string{key}
+      for value,score := range values {
+          args = append(args, strconv.FormatFloat(score, 'f', -1, 64))
+          args = append(args, value)
+      }
+      res, err := client.sendCommand("ZADD", args...)
+      if err != nil {
+          return false, err
+      }
+  
+      return res.(int64) >= 1, nil
+}
+  
 func (client *Client) Zrem(key string, value []byte) (bool, error) {
 	res, err := client.sendCommand("ZREM", key, string(value))
 	if err != nil {
@@ -975,13 +989,17 @@ func (client *Client) Zrevrank(key string, value []byte) (int, error) {
 	return int(res.(int64)), nil
 }
 
-func (client *Client) Zrange(key string, start int, end int) ([][]byte, error) {
-	res, err := client.sendCommand("ZRANGE", key, strconv.Itoa(start), strconv.Itoa(end))
-	if err != nil {
-		return nil, err
-	}
-
-	return res.([][]byte), nil
+func (client *Client) Zrange(key string, start int, end int,WITHSCORES ...string) ([][]byte, error) {
+      args := []string{key,strconv.Itoa(start), strconv.Itoa(end)}
+      if len(WITHSCORES) == 1 && WITHSCORES[0] == "WITHSCORES" {
+          args = append(args,"WITHSCORES")
+      }    
+      res, err := client.sendCommand("ZRANGE", args...)
+      if err != nil {
+          return nil, err
+      }    
+  
+      return res.([][]byte), nil
 }
 
 func (client *Client) Zrevrange(key string, start int, end int) ([][]byte, error) {
