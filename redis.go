@@ -220,7 +220,17 @@ func (client *Client) sendCommand(cmd string, args ...string) (data interface{},
 		}
 
 		data, err = client.rawSend(c, b)
-	}
+    }
+
+    //in case of "connection reset by peer" or "broken pipe"
+    if err != nil {
+        msg := err.Error()
+        if strings.Contains(msg, "reset") || strings.Contains(msg, "broken"){
+            c.Close()
+            client.pushCon(nil)
+            return data, err
+        }
+    }
 
 	//add the client back to the queue
 	client.pushCon(c)
