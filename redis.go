@@ -113,8 +113,8 @@ func readResponse(reader *bufio.Reader) (interface{}, error) {
 		return strings.TrimSpace(line[1:]), nil
 	}
 
-	if strings.HasPrefix(line, "-ERR ") {
-		errmesg := strings.TrimSpace(line[5:])
+	if line[0] == '-' {
+		errmesg := strings.TrimSpace(line[1:])
 		return nil, RedisError(errmesg)
 	}
 
